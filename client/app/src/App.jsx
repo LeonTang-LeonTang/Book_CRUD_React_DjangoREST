@@ -3,6 +3,16 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
+// 1. About frontend and backend communication
+  // Frontend  --> Fectch --> Backend
+  // (Object) ----------------> Json String ------->  (Object) 
+// 2. About JSON.stringify() and response.json()
+  // JSON.stringify() : turn object into json string
+  // response.json() : turn json string into object
+
+// 3.what response and response.json() are?
+  // response really is: An HTTP Response object — not the actual data yet.
+
 function App() {
   const [books, setBooks] =useState([]);
   const [title, setTitle] = useState("");
@@ -17,16 +27,41 @@ function App() {
 
   const fetchBooks = async () =>{
     try{
-      //fetch is the browser’s built-in tool to make HTTP requests
+      //fetch is the browser’s built-in tool to make HTTP requests.
+      //No fetch = no communication = no CRUD. Frontend CANNOT touch backend data directly.So every CRUD action must start with an HTTP request.That’s why CRUD always starts here:const response = await fetch(URL, options)
+
+      // response is an HTTP response object. it is ✅ Metadata + raw body stream, ❌ NOT your book data,❌ NOT JSON yet
       const response =await fetch("http://127.0.0.1:8000/api/books/");//fetch(...): This is the browser's built-in tool to make HTTP requests. It sends a "GET" request to your Django URL.
-      
-      const data =await response.json();
+      // console.log(`response: ${response}`)
+      const data =await response.json();//convert that text into a JS object.response.json() takes raw JSON text and converts it into a real JavaScript object.”
+      // console.log(`response.json: ${data}`)
       setBooks(data);
     } catch(err){
       console.log(err)
     }
   };
-
+// Difference between the result response and response.json() 
+// The Result of console.log(response)
+  // Output of 'response' in Chrome Console:
+      // Response {
+      //     body: ReadableStream,       // <--- CRITICAL: Your data is hidden inside this "Stream"
+      //     bodyUsed: false,
+      //     headers: Headers {},        // Contains "Content-Type: application/json"
+      //     ok: true,                   // This means Status is between 200-299 (Success)
+      //     redirected: false,
+      //     status: 201,                // The exact Status Code (201 = Created)
+      //     statusText: "Created",
+      //     type: "cors",
+      //     url: "http://127.0.0.1:8000/api/books/create/"
+      // }
+  // The Result of response.json():
+    // Output of 'data' in Chrome Console:
+      // {
+      //     id: 15,                     // <--- The Server generated this ID!
+      //     title: "The Matrix",        // <--- The data you sent
+      //     release_year: 1999          // <--- The data you sent
+      // }
+      
   //What does JSON.stringify REALLY do? It converts a JavaScript object INTO a JSON-formatted string
 // e.g.
   //  const bookData = {
@@ -59,6 +94,8 @@ function App() {
         release_year: releaseYear,
       };
       try{
+        //Fetch is not for getting things. It is for communicating between the browser(Frontend/React) and the database(Backend/Django).
+        // fetch sounds liek DIALing THE PHONE (Start the connection)
         const response =await fetch("http://127.0.0.1:8000/api/books/create/", {
         method:"POST",
         headers:{
@@ -66,7 +103,7 @@ function App() {
         },
         body:JSON.stringify(bookData),});
 
-      const data =await response.json();
+      const data =await response.json();//(response.json() is JavaScript Object. Extract the data)
       setBooks((prev)=>[...prev, data]);
       }
       catch(err){
